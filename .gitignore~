@@ -2,4 +2,3 @@
 *.js~
 *.json~
 *.md~
-node_modules

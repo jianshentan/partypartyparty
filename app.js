@@ -7,7 +7,6 @@
 var express = require('express')
   , http = require('http')
   , path = require('path');
-  
 
 var app = express();
 
@@ -51,10 +50,10 @@ app.post('/start/login', routes.login);
 app.post('/start/logout', routes.logout);
 app.post('/start/signup', routes.signup);
 
+app.get('/getFriends', routes.getFriends);
 /*
 app.post('/addFriend', routes.addFriend);
 app.get('/getFriend', routes.getFriend);
-app.get('/getFriends', routes.getFriends);
 */
 
 http.createServer(app).listen(app.get('port'), function(){

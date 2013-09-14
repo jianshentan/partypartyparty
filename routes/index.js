@@ -1,21 +1,10 @@
 var mongoose    = require('mongoose');
 var async       = require('async');
+var util        = require('../models/util');
 var Party       = mongoose.model('Party');
 var User        = mongoose.model('User');
 var Upvote      = mongoose.model('Upvote');
 
-/* parse date 
- * expects: "yyyy-mm-dd hh:mm:ss";
- * returns: [yyyy, mm, dd, hh, mm, ss] *note that month is between 0-11
- */
-function parseDate(d) {
-    var ret = d.split(/[-: ]/);
-    ret[1] = (parseInt(ret[1]) - 1).toString();
-    if (ret.length != 6) { return null; }
-    return ret;
-}
-
-// real routes
 exports.index = function(req, res) {
     res.render('index', { title: 'Party time!' });
 };
@@ -24,7 +13,6 @@ exports.start = function(req, res) {
     res.render('index', { title: 'Sign Up time!' });
 };
 
-// auth
 exports.auth = function(req, res, next) {
     if (req.session && req.session.userId) {
         User.find({"_id":req.session.userId}, function(err, user) {
@@ -42,15 +30,8 @@ exports.auth = function(req, res, next) {
     }
 };
 
-/*
- * req.body: {
- *              email: string
- *            , password: string
- *           }
- */
 exports.login = function(req, res) {
     User.findOne({"email": req.body.email}, function(err, user) {
-        console.log('user: ' + user);
         if (err) {
             console.log("ERROR could not find user by email: " + err);
             return;
@@ -73,17 +54,8 @@ exports.logout = function(req, res) {
     res.send("Logged out.");
 };
 
-/*
- * req.body: {
- *              username: string
- *            , password: string
- *            , firstname: string
- *            , lastname: string
- *            , email: string
- *           }
- */
 exports.signup = function(req, res) {
-    // need to check that username and email are valid first
+    // TODO: need to check that username and email are valid and not taken
     new User({
         username : req.body.username
       , password : req.body.password
@@ -102,32 +74,9 @@ exports.signup = function(req, res) {
     });
 };
 
-/*
- * TODO: implement
- */
-exports.addFriend = function(req, res) {
-    var friendId = req.body.friendId;
-    User.find({"_id" : usersreq.session.userId}, function(err, user) {
-        
-    });
-};
-
-
-/*
- * req.body = {
- *                  name: string
- *                , description: string
- *                , time: "yyyy-mm-dd hh:mm:ss"
- *                , address: {
- *                              street: string
- *                            , city: string
- *                            , state: string
- *                            , country: string
- *                            , zip: string
- *                           }
- *            }
- */
 exports.postParty = function(req, res) {
+    /* TODO: check for duplicates */
+
     /* hack : leave address field empty to activate hack*/
     if (req.body.address == null) {
         address = {
@@ -139,7 +88,7 @@ exports.postParty = function(req, res) {
         }
     }
 
-    var date = parseDate(req.body.time);
+    var date = util.parseDate(req.body.time);
     if (date == null) {
         console.log("ERROR parseDate did not work");
         return;
@@ -178,13 +127,6 @@ exports.postUpvote = function(req, res) {
     });
 };
 
-/*
- * getParty returns:
- *   { 
- *       party : { <partySchema> }, 
- *       upvotes : [ { <upvoteSchema> } ]
- *   }
- */
 exports.getParty = function(req, res) {
     var partyId = req.query.partyId;
     var ret = {};
@@ -218,17 +160,13 @@ exports.getParty = function(req, res) {
     });
 };
 
-/*
- * getParties return: [<partySchema>]
- */
 exports.getParties = function(req, res) {
-    // for each friend of <user>
-    //      get party of upvotes where owner is friend
-    //      get party where owner is friend
     var userId = req.session.userId;
+
     var friends = [];
     var parties = [];
     var partyIds = [];
+
     async.series([
         function(callback) {
             User.findOne({ "_id": userId }, function(err, user) {
@@ -283,3 +221,67 @@ exports.getParties = function(req, res) {
     });
 };
 
+exports.getFriends = function(req, res) {
+    var friendIds = [];
+    var friends = [];
+    async.series([
+        function(callback) {
+            User.findOne({"_id" : req.session.userId}, function(err, user) {
+                if (err) {
+                    console.log("ERROR could not find user: " + err);
+                    return;
+                }
+                friendIds = user.friends;
+                callback();
+            });
+        },
+        function(callback) {
+            User.find({"_id": { $in : friendIds }}, function(err, friendList) {
+                if (err) {
+                    console.log("ERROR could not find friends :( " + err);
+                    return;
+                }
+                friends = friendList;
+                callback();
+            });
+        }
+    ], function(err) {
+        if (err) {
+            console.log("ERROR could not find friends ;( " + err);
+            return;
+        }
+        res.send(friends);
+    });
+};
+
+exports.getFriend = function(req, res) {
+    var ret = {};
+    async.parallel([
+        function(callback) {
+            Upvotes.find({"owner": req.query.friendId}, function(err, upvotes) {
+                if (err) {
+                    console.log("ERROR could not get upvotes: " + err);
+                    return;
+                }
+                ret.upvotes = upvotes;
+                callback();
+            });
+        },
+        function(callback) {
+            User.findOne({"_id": req.query.friendId}, function(err, friend) {
+                if (err) {
+                    console.log("ERROR could not get friend: " + err);
+                    return;
+                }
+                ret.friend = friend;
+                callback();
+            });
+        }
+    ], function(err) {
+        if (err) {
+            console.log("ERROR could not find friend & upvotes: " + err);
+            return;
+        }
+        res.send(ret);
+    });
+};

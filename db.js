@@ -32,6 +32,18 @@ var upvoteSchema = new Schema({
   , party       : { type: Schema.ObjectId, ref: 'Party' }
 }); 
 
+var friendRequestStatus = {
+    PENDING     : 0
+  , ACCEPTED    : 1
+  , REJECTED    : 2
+}
+
+var friendRequestSchema = new Schema({
+    from        : { type: Schema.ObjectId, ref: 'User' }
+  , to          : { type: Schema.ObjectId, ref: 'User' }
+  , state       : Number
+});
+
 var User = mongoose.model('User', userSchema);
 var Party = mongoose.model('Party', partySchema);
 var Upvote = mongoose.model('Upvote', upvoteSchema);
