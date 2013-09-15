@@ -158,8 +158,31 @@ Http queries:
         [ { <userSchema> } ]
 
 '/sendFriendRequest':
-    GET reqest
+    GET request
     expects:
         req.session.userId = <userId>
         req.query.friend = <userId>
     returns: empty
+
+'/getFriendRequests':
+    GET request
+    expects:
+        req.session.userId = <userId>
+    returns: 
+        [ { <userSchema> } ]
+
+'/getPendingResponses': 
+    GET request
+    expects:
+        req.session.userId = <userId>
+    returns: empty
+
+'/acceptFriendRequest':
+    GET request
+    description:
+        adds requesting user to current user's friend list
+        adds current user to requesting user's friend list
+    expects:
+        req.session.userId = <userId>
+        req.query.friend = <userId>
+    return: empty // some kind of success message

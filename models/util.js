@@ -7,4 +7,9 @@ exports.parseDate = function(d) {
     ret[1] = (parseInt(ret[1]) - 1).toString();
     if (ret.length != 6) { return null; }
     return ret;
-}
+};
+
+exports.handleError = function(msg, err) {
+    console.log("ERROR " + msg + ": " + err);
+    return;
+};
