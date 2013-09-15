@@ -366,5 +366,21 @@ exports.acceptFriendRequest = function(req, res) {
 };
 
 exports.declineFriendRequest = function(req, res) {
-
+    FriendRequest.findOne({to: req.session.userId, 
+                           from: req.query.friend,
+                           state: db.friendRequestStatus.PENDING}, 
+        function(err, request) {
+        if (err) { return util.handleError("could not get requst data", err); }
+        if (request) {
+            request.state = db.friendRequestStatus.REJECT;
+            request.save(function(err) {
+                if (err) { 
+                    return util.handleError("could not save state of request", err); 
+                }
+            }); 
+            res.send("declined friend request");
+        } else {
+            return util.handleError("no friend request found", "");
+        }
+    });
 };

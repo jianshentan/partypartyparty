@@ -30,6 +30,47 @@ to run:
 1. run "nodemon app.js"
 
 ======================================================================
+                            DB SCHEMAS
+======================================================================
+userSchema = {
+    email   : String 
+  , name    : {
+                  first : String
+                , last  : String
+              }
+  , friends : [ ObjectIds of User ]
+};
+
+partySchema = {
+    name        : String
+  , description : String
+  , owner       : ObjectId of User
+  , time        : Date
+  , address     : {
+                      street    : String
+                    , city      : String
+                    , state     : String
+                    , country   : String
+                    , zip       : String
+                  }
+  , rating      : Number
+}
+
+upvoteSchema = {
+    owner       : ObjectId of User
+  , description : String
+  , party       : ObjectId of Party
+}
+
+friendRequestSchema = {
+    from    : ObjectId of User
+  , to      : ObjectId of User
+  , state   : friendRequestStatus
+}
+
+friendRequestStatus = {PENDING, ACCEPTED, REJECTED}
+
+======================================================================
                             BACK END API
 ======================================================================
 
@@ -180,9 +221,20 @@ Http queries:
 '/acceptFriendRequest':
     GET request
     description:
+        change state of friendRequest to ACCEPT
         adds requesting user to current user's friend list
         adds current user to requesting user's friend list
     expects:
         req.session.userId = <userId>
         req.query.friend = <userId>
     return: empty // some kind of success message
+
+'/declineFriendRequest':
+    GET request
+    description:
+        change state of friendRequest to DECLINED
+    expects:
+        req.session.userId = <userId>
+        req.query.friend = <userId>
+    return: empty // some kind of success message
+
