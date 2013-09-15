@@ -53,19 +53,35 @@ exports.logout = function(req, res) {
 };
 
 exports.signup = function(req, res) {
-    // TODO: need to check that username and email are valid and not taken
-    new User({
-        username : req.body.username
-      , password : req.body.password
-      , name : {
-                   first : req.body.firstname
-                 , last : req.body.lastname
-               }
-      , email : req.body.email
-      , friends : []
-    }).save(function(err, user) {
-        if (err) { return util.handleError("could not sugn up new user", err); }
-        res.send("New user is saved!");
+    async.series([
+        function(callback) {
+            User.findOne({ $or: [{username: req.body.username},
+                                 {email: req.body.email}] },
+                function(err, user) {
+                if (err) { return util.handleError("could not query user", err); }
+                if (user) { res.send("username/email already exists!"); }
+                else
+                    callback();
+            });
+        },
+        function(callback) {
+            new User({
+                username : req.body.username
+              , password : req.body.password
+              , name : {
+                           first : req.body.firstname
+                         , last : req.body.lastname
+                       }
+              , email : req.body.email
+              , friends : []
+            }).save(function(err, user) {
+                if (err) { return util.handleError("could not sign up new user", err); }
+                req.session.userId = user.id;
+                res.send("New user is saved!");
+            });
+        }
+    ], function(err) {
+        if (err) { return util.handleError("could not register", err); }
     });
 };
 
@@ -237,27 +253,76 @@ exports.getFriend = function(req, res) {
 };
 
 exports.findUser = function(req, res) {
-    User.find( { $or : [{"username": req.query.input}, 
-                        {"email": req.query.input},
-                        {"name.first": req.query.input},
-                        {"name.last": req.query.input}] }, 
-               function(err, users) {
-        if (err) { return util.handleError("could not find user with search query", err); }
-        res.send(users);
+    var ret = [];
+    var users;
+    async.series([
+        function(callback) {
+            User.find( { $or : [{"username": req.query.input}, 
+                                {"email": req.query.input},
+                                {"name.first": req.query.input},
+                                {"name.last": req.query.input}] }, 
+                       function(err, userList) {
+                if (err) { return util.handleError("could not find user w/ search query", err); }
+                users = userList;
+                //res.send(users);
+                callback();
+            });
+        },
+        function(callback) {
+            FriendRequest.find( { $or: [{"from": req.session.userId, "to": { $in: users} },
+                                        {"to": req.session.userId, "from": { $in: users} }] },
+                function(err, requestList) {
+                if (err) { return util.handleError("could not find requests", err); }
+                for (var u in users) {
+                    var flag = true;
+                    for (var r in requestList) {
+                        if (users[u]._id.equals(requestList[r].to) ||
+                            users[u]._id.equals(requestList[r].from)) {
+                            ret.push({"user": users[u], "requestState": requestList[r]});
+                            flag = false;
+                        }
+                    }
+                    if (flag)
+                        ret.push({"user": users[u], "requestState": null});
+                }
+                callback();
+            }); 
+        }
+    ], function(err) {
+        if (err) { return util.handleError("could not find user", err); }
+        res.send(ret);
     });
-    // TODO: check if returned users are friends
 };
 
 exports.sendFriendRequest = function(req, res) {
     // TODO: check that it does not already exist
-    new FriendRequest({
-        from : req.session.userid
-      , to : req.query.friend
-      , state : db.friendRequestStatus.PENDING
-    }).save(function(err, data) {
-        if (err) { return util.handleError("could not send friend request", err); }
-        res.send('friend request sent');
-    }); 
+    async.series([
+        function(callback) {
+            FriendRequest.findOne({"from": req.session.userId, "to": req.query.friend},
+                function(err, request) {
+                if (err) { return util.handleErro("could not get friend request", err); }
+                if (request) {
+                    res.send("this friend request already exists!");
+                    return;
+                } else
+                    callback();
+            });
+        },
+        function(callback) {
+            console.log("SESSION: " + req.session.userId);
+            new FriendRequest({
+                from : req.session.userId
+              , to : req.query.friend
+              , state : db.friendRequestStatus.PENDING
+            }).save(function(err, data) {
+                if (err) { return util.handleError("could not send friend request", err); }
+                res.send('friend request sent');
+                callback();
+            });
+        }
+    ], function(err) {
+        if (err) { return util.handleError("could not process sending friend requeset", ""); }
+    });
 };
 
 exports.getFriendRequests = function(req, res) {
@@ -372,7 +437,7 @@ exports.declineFriendRequest = function(req, res) {
         function(err, request) {
         if (err) { return util.handleError("could not get requst data", err); }
         if (request) {
-            request.state = db.friendRequestStatus.REJECT;
+            request.state = db.friendRequestStatus.REJECTED;
             request.save(function(err) {
                 if (err) { 
                     return util.handleError("could not save state of request", err); 

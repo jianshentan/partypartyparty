@@ -97,6 +97,8 @@ Http queries:
 
 '/start/login':
     POST request
+    description:
+        generates session
     expects:
         req.body = {
             email: <string>
@@ -116,6 +118,8 @@ Http queries:
 
 '/start/signup':
     POST request
+    description:
+        generates session
     expects:
         req.body = {
             username: <string>
@@ -196,7 +200,8 @@ Http queries:
     expects:
         req.query.input = <string>
     returns:
-        [ { <userSchema> } ]
+        [ { user: <userSchema>, requestState: <friendRequestSchema> } ]
+        if no friend-request is shared, 'requestState' will simply equal null
 
 '/sendFriendRequest':
     GET request
