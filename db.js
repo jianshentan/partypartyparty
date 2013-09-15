@@ -37,6 +37,7 @@ var friendRequestStatus = {
   , ACCEPTED    : 1
   , REJECTED    : 2
 }
+exports.friendRequestStatus = friendRequestStatus;
 
 var friendRequestSchema = new Schema({
     from        : { type: Schema.ObjectId, ref: 'User' }
@@ -44,9 +45,10 @@ var friendRequestSchema = new Schema({
   , state       : Number
 });
 
-var User = mongoose.model('User', userSchema);
-var Party = mongoose.model('Party', partySchema);
-var Upvote = mongoose.model('Upvote', upvoteSchema);
+var User            = mongoose.model('User', userSchema)
+  , Party           = mongoose.model('Party', partySchema)
+  , Upvote          = mongoose.model('Upvote', upvoteSchema)
+  , FriendRequest   = mongoose.model('FriendRequest', friendRequestSchema);
 
 mongoose.connect('mongodb://localhost/hopper_v1');
 var db = mongoose.connection;
@@ -77,6 +79,12 @@ db.once('open', function callback() {
                 console.log("ERROR Could not remove 'Upvote' collection: "+ err);
                 return;
             } 
+        });
+        FriendRequest.remove({}, function(err) {
+            if (err) {
+                console.log("ERROR Could not remove 'FriendRequest' collection: " + err);
+                return;
+            }
         });
     }
 
@@ -142,6 +150,50 @@ db.once('open', function callback() {
         dummyUsers[i].save(function(err, user) {
             if (err) {
                 console.log("ERROR Could not save user: " + err);
+                return;
+            }
+        });
+    }
+
+    // dummy FriendRequest data such that:
+    //      dummyUser01 has request to dummyUser02 that is ACCEPTED
+    //      dummyUser03 has request to dummyUser01 that is ACCEPTED
+    //      dummyUser04 has request to dummyUser02 that is REJECTED
+    //      dummyUser04 has request to dummyUser01 that is PENDING
+    
+    var dummyFriendRequests = [];
+    var dummyFriendRequest01 = new FriendRequest({
+        from    : dummyUser01._id
+      , to      : dummyUser02._id
+      , state   : friendRequestStatus.ACCEPTED
+    });
+    dummyFriendRequests.push(dummyFriendRequest01); 
+
+    var dummyFriendRequest02 = new FriendRequest({
+        from    : dummyUser03._id
+      , to      : dummyUser01._id
+      , state   : friendRequestStatus.ACCEPTED
+    });
+    dummyFriendRequests.push(dummyFriendRequest02);
+
+    var dummyFriendRequest03 = new FriendRequest({
+        from    : dummyUser04._id
+      , to      : dummyUser02._id
+      , state   : friendRequestStatus.REJECTED
+    });
+    dummyFriendRequests.push(dummyFriendRequest03);
+
+    var dummyFriendRequest04 = new FriendRequest({
+        from    : dummyUser04._id
+      , to      : dummyUser01._id
+      , state   : friendRequestStatus.PENDING
+    });
+    dummyFriendRequests.push(dummyFriendRequest04);
+
+    for (var i in dummyFriendRequests) {
+        dummyFriendRequests[i].save(function(err, user) {
+            if (err) {
+                console.log("ERROR Could not save friend request: " + err);
                 return;
             }
         });

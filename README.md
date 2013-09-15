@@ -149,3 +149,17 @@ Http queries:
         req.session.userId = <userId>
     returns:
         [ { <userSchema> } ]
+
+'/findUser':
+    GET request
+    expects:
+        req.query.input = <string>
+    returns:
+        [ { <userSchema> } ]
+
+'/sendFriendRequest':
+    GET reqest
+    expects:
+        req.session.userId = <userId>
+        req.query.friend = <userId>
+    returns: empty

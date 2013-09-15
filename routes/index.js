@@ -1,9 +1,11 @@
-var mongoose    = require('mongoose');
-var async       = require('async');
-var util        = require('../models/util');
-var Party       = mongoose.model('Party');
-var User        = mongoose.model('User');
-var Upvote      = mongoose.model('Upvote');
+var mongoose        = require('mongoose');
+var async           = require('async');
+var util            = require('../models/util');
+var friendRequestStatus = require('../db');
+var Party           = mongoose.model('Party');
+var User            = mongoose.model('User');
+var Upvote          = mongoose.model('Upvote');
+var FriendRequest   = mongoose.model('FriendRequest');
 
 exports.index = function(req, res) {
     res.render('index', { title: 'Party time!' });
@@ -284,4 +286,37 @@ exports.getFriend = function(req, res) {
         }
         res.send(ret);
     });
+};
+
+exports.findUser = function(req, res) {
+    User.find( { $or : [{"username": req.query.input}, 
+                        {"email": req.query.input},
+                        {"name.first": req.query.input},
+                        {"name.last": req.query.input}] }, 
+               function(err, users) {
+        if (err) {
+            console.log("ERROR find user with search query failed: " + err);
+            return;
+        }
+        res.send(users);
+    });
+    // TODO: check if returned users are friends
+};
+
+exports.sendFriendRequest = function(req, res) {
+    new FriendRequest({
+        from : req.session.userid
+      , to : req.query.friend
+      , state : friendRequestStatus.PENDING
+    }).save(function(err, data) {
+        if (err) {
+            console.log("ERROR could not send friend request: " + err);
+            return;
+        }
+        res.send('friend request sent');
+    });
+};
+
+exports.getFriendRequest = function(req, res) {
+    
 };

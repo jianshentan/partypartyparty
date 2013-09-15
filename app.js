@@ -56,6 +56,9 @@ app.post('/addFriend', routes.addFriend);
 app.get('/getFriend', routes.getFriend);
 */
 
+app.get('/findUser', routes.findUser);
+app.get('/sendFriendRequest', routes.sendFriendRequest);
+
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
 });
