@@ -84,7 +84,7 @@ req.session:
     GET request
     description:
         requires authentication
-    return: 
+    return:
         redirection:
             if session has user id -> '/'
             else -> '/start'
@@ -95,51 +95,51 @@ req.session:
     return: empty
 
 ###Auth###
-'/start/login':  
-    POST request  
-    description:  
-        generates session  
-    expects:  
-        req.body = {  
-            email: <string>  
-          , password: <string>  
-        }  
-    return:   
-        redirection:  
-            if success -> '/'   
-            else -> '/start'  
-
-'/start/logout':  
-    POST request  
-    description:  
-        deletes session  
-    expects: empty  
-    return: empty  
-
-'/start/signup':  
-    POST request  
-    description:  
-        generates session  
-    expects:  
-        req.body = {  
-            username: <string>  
-          , password: <string>  
-          , firstname: <string>  
-          , lastname: <string>  
-          , email: <string>  
-        }  
-    returns:  
+'/start/login':
+    POST request
+    description:
+        generates session
+    expects:
+        req.body = {
+            email: <string>
+          , password: <string>
+        }
+    return: 
         redirection:
-            if success -> '/'  
-            else -> '/start'  
+            if success -> '/' 
+            else -> '/start'
+
+'/start/logout':
+    POST request
+    description:
+        deletes session
+    expects: empty
+    return: empty
+
+'/start/signup':
+    POST request
+    description:
+        generates session
+    expects:
+        req.body = {
+            username: <string>
+          , password: <string>
+          , firstname: <string>
+          , lastname: <string>
+          , email: <string>
+        }
+    returns:
+        redirection:
+            if success -> '/'
+            else -> '/start'
         
 ###Party###
-'/postParty':  
-    POST request  
-    expects:  
-        req.body = {  
-            name: <string>  
-          , description: <string>  
+'/postParty':
+    POST request 
+    expects:
+        req.body = {
+            name: <string>
+          , description: <string>
           , time: "yyyy-mm-dd hh:mm:ss"
           , address: {
                 street: <string>
