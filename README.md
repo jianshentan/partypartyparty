@@ -1,11 +1,8 @@
-partypartyparty
-===============
 
-======================================================================
-                           GETTING STARTED 
+                           ##GETTING STARTED##
 ======================================================================
 
-installation:
+Installation:
 1. install node 
 2. install mongodb
 3. package.json should look like the following:
@@ -29,8 +26,9 @@ installation:
 to run:
 1. run "nodemon app.js"
 
-======================================================================
-                            DB SCHEMAS
+----------------------------------------------------------------------
+
+                            ##DB SCHEMAS##
 ======================================================================
 userSchema = {
     email   : String 
@@ -70,8 +68,9 @@ friendRequestSchema = {
 
 friendRequestStatus = {PENDING, ACCEPTED, REJECTED}
 
-======================================================================
-                            BACK END API
+----------------------------------------------------------------------
+
+                          ##BACK END API##
 ======================================================================
 
 Sessions are created on login
@@ -80,7 +79,7 @@ req.session:
     userId: <ObjectId from MongoDb>
 }
 
-Http queries:
+###Routes###
 '/' :
     GET request
     description:
@@ -95,7 +94,7 @@ Http queries:
     prompts login
     return: empty
 
-============================== AUTH ==================================
+###Auth###
 '/start/login':  
     POST request  
     description:  
@@ -134,6 +133,7 @@ Http queries:
             if success -> '/'  
             else -> '/start'  
         
+###Party###
 '/postParty':  
     POST request  
     expects:  
@@ -179,6 +179,7 @@ Http queries:
     returns:
         [ <partySchema> ]
 
+###Friend###
 '/getFriend':
     GET request
     expects:
