@@ -15,6 +15,9 @@ require('./db');
 
 // connect to router
 var routes = require('./routes')
+  , auth = require('./routes/auth')
+  , party = require('./routes/party')
+  , friend = require('./routes/friend');
 
 var MemoryStore = express.session.MemoryStore();
 
@@ -36,32 +39,30 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-// Pages
-app.get('/', routes.auth, routes.index);
+// Index 
+app.get('/', auth.auth, routes.index);
 app.get('/start', routes.start);
 
-app.post('/postParty', routes.postParty);
-app.get('/postUpvote', routes.postUpvote);
+// Auth
+app.post('/start/login', auth.login); 
+app.post('/start/logout', auth.logout);
+app.post('/start/signup', auth.signup);
 
-app.get('/getParty', routes.getParty);
-app.get('/getParties', routes.getParties);
+// Party
+app.post('/postParty', party.postParty); 
+app.get('/postUpvote', party.postUpvote);
+app.get('/getParty', party.getParty); 
+app.get('/getParties', party.getParties);
 
-app.post('/start/login', routes.login);
-app.post('/start/logout', routes.logout);
-app.post('/start/signup', routes.signup);
-
-app.get('/getFriends', routes.getFriends);
-/*
-app.post('/addFriend', routes.addFriend);
-app.get('/getFriend', routes.getFriend);
-*/
-
-app.get('/findUser', routes.findUser);
-app.get('/sendFriendRequest', routes.sendFriendRequest);
-app.get('/getFriendRequests', routes.getFriendRequests);
-app.get('/getPendingRequests', routes.getPendingRequests);
-app.get('/acceptFriendRequest', routes.acceptFriendRequest);
-app.get('/declineFriendRequest', routes.declineFriendRequest);
+// Friend
+app.get('/getFriends', friend.getFriends);
+app.get('/getFriend', friend.getFriend);
+app.get('/findUser', friend.findUser);
+app.get('/sendFriendRequest', friend.sendFriendRequest);
+app.get('/getFriendRequests', friend.getFriendRequests);
+app.get('/getPendingRequests', friend.getPendingRequests);
+app.get('/acceptFriendRequest', friend.acceptFriendRequest);
+app.get('/declineFriendRequest', friend.declineFriendRequest);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));
