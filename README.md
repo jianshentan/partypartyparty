@@ -33,8 +33,9 @@
       , name    : {
                         first : String
                       , last  : String
-        	 }
-    , friends : [ ObjectIds of User ]
+        	      }
+      , friends : [ ObjectIds of User ]
+      , status  : socialStatus 
     };
 
     partySchema = {
@@ -64,7 +65,8 @@
       , state   : friendRequestStatus
     }
 
-    friendRequestStatus = {PENDING, ACCEPTED, REJECTED}
+    socialStatus = {{AWKWARD_TURTLE:0}, {SOCIAL_BUTTERFLY:1}}
+    friendRequestStatus = {{PENDING:0}, {ACCEPTED:1}, {REJECTED:2}}
 
 ##BACK END API
 

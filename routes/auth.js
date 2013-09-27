@@ -63,6 +63,7 @@ exports.signup = function(req, res) {
                        }
               , email : req.body.email
               , friends : []
+              , status : socialStatus.AWKWARD_TURTLE
             }).save(function(err, user) {
                 if (err) { return util.handleError("could not sign up new user", err); }
                 req.session.userId = user.id;

@@ -8,8 +8,15 @@ var userSchema = new Schema({
                     , last      : String
                   }
   , friends     : [{ type: Schema.ObjectId, ref: 'User' }]
+  , status      : Number
 });
 userSchema.plugin(require('basic-auth-mongoose'));
+
+var socialStatus = {
+    AWKWARD_TURTLE  : 0
+  , SOCIAL_BUTTERFLY: 1
+}
+exports.socialStatus = socialStatus;
 
 var partySchema = new Schema({
     name        : { type: String, required: true }
@@ -102,6 +109,7 @@ db.once('open', function callback() {
                     , last  : "tan"
                   }
       , friends : []
+      , status  : socialStatus.AWKWARD_TURTLE
     });
     dummyUsers.push(dummyUser01);
 
@@ -114,6 +122,7 @@ db.once('open', function callback() {
                     , last  : "bentel"
                   }
       , friends : []
+      , status  : socialStatus.AWKWARD_TURTLE
     });
     dummyUsers.push(dummyUser02);
 
@@ -126,6 +135,7 @@ db.once('open', function callback() {
                     , last  : "wiesner"
                   }
       , friends : []
+      , status  : socialStatus.AWKWARD_TURTLE
     });
     dummyUsers.push(dummyUser03);
 
