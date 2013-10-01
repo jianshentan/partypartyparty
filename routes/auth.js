@@ -20,17 +20,21 @@ exports.auth = function(req, res, next) {
 };
 
 exports.login = function(req, res) {
+    var LOGIN_SUCCESS   = "Login successful"
+      , EMAIL_FAIL      = "Email does not exist"
+      , PASSWORD_FAIL   = "Invalid password";
+
     User.findOne({"email": req.body.email}, function(err, user) {
         if (err) { return util.handleError("could not find user by email", err); }
         if (!user) {
-            res.send("Email address does not exist.");
+            res.send({ status: "ERROR", message: EMAIL_FAIL });
             return;
         } else {
             if (user.authenticate(req.body.password)) {
                 req.session.userId = user.id;
-                res.send("Logged in.");
+                res.send({ status: "OK", message: LOGIN_SUCCESS });
             } else {
-                res.send("Incorrect password.");
+                res.send({ status: "ERROR", message: PASSWORD_FAIL });
             }
         }
     });
@@ -38,18 +42,25 @@ exports.login = function(req, res) {
 
 exports.logout = function(req, res) {
     delete req.session.userId; 
-    res.send("Logged out.");
+    res.send({ status: "OK" });
 };
 
 exports.signup = function(req, res) {
+    var USERNAME_DUPLICATE = "this username is already in use"
+      , EMAIL_DUPLICATE    = "this email is already in use";
+
     async.series([
         function(callback) {
             User.findOne({ $or: [{username: req.body.username},
                                  {email: req.body.email}] },
                 function(err, user) {
                 if (err) { return util.handleError("could not query user", err); }
-                if (user) { res.send("username/email already exists!"); }
-                else
+                if (user) {
+                    if (user.username == req.body.username)
+                        res.send({ status: "ERROR", message: USERNAME_DUPLICATE });
+                    if (user.email == req.body.email)
+                        res.send({ status: "ERROR", message: EMAIL_DUPLICATE });
+                } else
                     callback();
             });
         },

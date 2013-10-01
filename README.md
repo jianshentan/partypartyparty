@@ -102,16 +102,22 @@ req.session:
               , password: <string>
             }
         return: 
-            redirection:
-                if success -> '/' 
-                else -> '/start'
+            {
+                status: <string> ("OK" || "ERROR")
+              , message: <string> ("Login sucessful" ||
+                                   "Email does not exist" ||
+                                   "Invalid password")
+            }
 
     '/start/logout':
         POST request
         description:
             deletes session
         expects: empty
-        return: empty
+        return: 
+            {
+                status: <string> ("OK" || "ERROR")
+            }
 
     '/start/signup':
         POST request
@@ -126,9 +132,12 @@ req.session:
               , email: <string>
             }
         returns:
-            redirection:
-                if success -> '/'
-                else -> '/start'
+            {
+                status: <string> ("OK" || "ERROR")
+              , message: <string> ("Signup sucessful" ||
+                                   "Email already in use" ||
+                                   "Username already in use")
+            }
         
 ###Party
     '/postParty':
