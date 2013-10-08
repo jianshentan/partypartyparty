@@ -27,14 +27,31 @@ exports.login = function(req, res) {
     User.findOne({"email": req.body.email}, function(err, user) {
         if (err) { return util.handleError("could not find user by email", err); }
         if (!user) {
-            res.send({ status: "ERROR", message: EMAIL_FAIL });
+            res.send(
+                {
+                    status: "ERROR"
+                  , message: req.body.email + " - " + EMAIL_FAIL
+                });
             return;
         } else {
             if (user.authenticate(req.body.password)) {
                 req.session.userId = user.id;
-                res.send({ status: "OK", message: LOGIN_SUCCESS });
+                res.send(
+                    {
+                        status: "OK"
+                      , message: LOGIN_SUCCESS
+                      , content: 
+                        {
+                            username: user.username
+                          , email: user.email
+                        }
+                    });
             } else {
-                res.send({ status: "ERROR", message: PASSWORD_FAIL });
+                res.send(
+                    {
+                        status: "ERROR"
+                      , message: PASSWORD_FAIL
+                    });
             }
         }
     });
@@ -47,7 +64,8 @@ exports.logout = function(req, res) {
 
 exports.signup = function(req, res) {
     var USERNAME_DUPLICATE = "this username is already in use"
-      , EMAIL_DUPLICATE    = "this email is already in use";
+      , EMAIL_DUPLICATE    = "this email is already in use"
+      , USER_SAVED         = "new user is saved!";
 
     async.series([
         function(callback) {
@@ -57,9 +75,17 @@ exports.signup = function(req, res) {
                 if (err) { return util.handleError("could not query user", err); }
                 if (user) {
                     if (user.username == req.body.username)
-                        res.send({ status: "ERROR", message: USERNAME_DUPLICATE });
+                        res.send(
+                            { 
+                                status: "ERROR"
+                              , message: USERNAME_DUPLICATE 
+                            });
                     if (user.email == req.body.email)
-                        res.send({ status: "ERROR", message: EMAIL_DUPLICATE });
+                        res.send(
+                            { 
+                                status: "ERROR"
+                              , message: EMAIL_DUPLICATE 
+                            });
                 } else
                     callback();
             });
@@ -78,7 +104,16 @@ exports.signup = function(req, res) {
             }).save(function(err, user) {
                 if (err) { return util.handleError("could not sign up new user", err); }
                 req.session.userId = user.id;
-                res.send("New user is saved!");
+                res.send(
+                    {
+                        status: "OK"
+                      , message: USER_SAVED
+                      , content: 
+                        {
+                            username: user.username
+                          , email: user.email
+                        }
+                    });
             });
         }
     ], function(err) {

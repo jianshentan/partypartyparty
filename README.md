@@ -107,6 +107,11 @@ req.session:
               , message: <string> ("Login sucessful" ||
                                    "Email does not exist" ||
                                    "Invalid password")
+              , content:  // content dne empty if status != "OK"
+                    {
+                        email: <string>
+                      , username: <string>
+                    }
             }
 
     '/start/logout':
@@ -137,6 +142,11 @@ req.session:
               , message: <string> ("Signup sucessful" ||
                                    "Email already in use" ||
                                    "Username already in use")
+              , content:  // content dne empty if status != "OK"
+                    {
+                        email: <string>
+                      , username: <string>
+                    }
             }
         
 ###Party
