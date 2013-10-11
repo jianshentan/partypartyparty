@@ -7,7 +7,7 @@ var User            = mongoose.model('User');
 var Upvote          = mongoose.model('Upvote');
 
 exports.postParty = function(req, res) {
-    /* TODO: check for duplicates */
+    /* TODO: use address to check for duplicates */
 
     /* hack : leave address field empty to activate hack*/
     if (req.body.address == null) {
@@ -20,33 +20,31 @@ exports.postParty = function(req, res) {
         }
     }
 
-    var date = util.parseDate(req.body.time);
+    var date = util.checkDate(req.body.time);
     if (date == null) { return util.handleError("parseDate did not work on", req.body.time); }
-    
+  
     new Party({
         name        : req.body.name
       , description : req.body.description
       , owner       : req.session.userId
-      , time        : date
+      , time        : req.body.time
       , address     : req.body.address
       , rating      : 0 // all parties start at rating 0
     }).save(function(err, data) {
         if (err) { return util.handleError("could not save the posted party", err); }
-        res.redirect('/');
+        res.send({ status: "OK" });
     });
 };
 
-/*
- * TODO: Test
- */
 exports.postUpvote = function(req, res) {
+    console.log("inside postUpvote");
     new Upvote({
         owner       : req.session.userId
       , description : req.body.description
       , party       : req.body.partyId
     }).save(function(err, data) {
         if (err) { return util.handlerError("could not save posted upvote", err); }
-        res.redirection('/');
+        res.send({ status: "OK" });
     });
 };
 
@@ -57,6 +55,8 @@ exports.getParty = function(req, res) {
         function(callback) {
             Party.find({"_id":partyId}, function(err, party) {
                 if (err) { return util.handleError("could not get party data", err); }
+                if (party.length == 0) { return util.handleError(
+                    "no party found - party id is invalid", ""); }
                 ret.party = party;
                 callback();
             });

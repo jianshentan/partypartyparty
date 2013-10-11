@@ -44,25 +44,26 @@ app.get('/', auth.auth, routes.index);
 app.get('/start', routes.start);
 
 // Auth
+app.get('/getSelf', auth.getSelf);
 app.post('/start/login', auth.login); 
 app.post('/start/logout', auth.logout);
 app.post('/start/signup', auth.signup);
 
 // Party
-app.post('/postParty', party.postParty); 
-app.get('/postUpvote', party.postUpvote);
-app.get('/getParty', party.getParty); 
-app.get('/getParties', party.getParties);
+app.post('/postParty', auth.auth, party.postParty); 
+app.post('/postUpvote', auth.auth, party.postUpvote);
+app.get('/getParty', auth.auth, party.getParty); 
+app.get('/getParties', auth.auth, party.getParties);
 
 // Friend
-app.get('/getFriends', friend.getFriends);
-app.get('/getFriend', friend.getFriend);
-app.get('/findUser', friend.findUser);
-app.get('/sendFriendRequest', friend.sendFriendRequest);
-app.get('/getFriendRequests', friend.getFriendRequests);
-app.get('/getPendingRequests', friend.getPendingRequests);
-app.get('/acceptFriendRequest', friend.acceptFriendRequest);
-app.get('/declineFriendRequest', friend.declineFriendRequest);
+app.get('/getFriends', auth.auth, friend.getFriends);
+app.get('/getFriend', auth.auth, friend.getFriend);
+app.get('/findUser', auth.auth, friend.findUser);
+app.get('/sendFriendRequest', auth.auth, friend.sendFriendRequest);
+app.get('/getFriendRequests', auth.auth, friend.getFriendRequests);
+app.get('/getPendingRequests', auth.auth, friend.getPendingRequests);
+app.get('/acceptFriendRequest', auth.auth, friend.acceptFriendRequest);
+app.get('/declineFriendRequest', auth.auth, friend.declineFriendRequest);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

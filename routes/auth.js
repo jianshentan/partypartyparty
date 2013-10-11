@@ -11,11 +11,13 @@ exports.auth = function(req, res, next) {
             if (user) {
                 next();
             } else {
-                res.redirect('/start');
+                // code should never reach here
+                return util.handleError(
+                    "no user found with valid session userId: ", req.session.userId);
             }
         });
     } else {
-        res.redirect('/start');
+        res.send("action cannot be done - user is not logged in");
     }
 };
 
@@ -94,13 +96,13 @@ exports.signup = function(req, res) {
             new User({
                 username : req.body.username
               , password : req.body.password
-              , name : {
-                           first : req.body.firstname
-                         , last : req.body.lastname
-                       }
+              //, name : {
+              //             first : req.body.firstname
+              //           , last : req.body.lastname
+              //         }
               , email : req.body.email
               , friends : []
-              , status : socialStatus.AWKWARD_TURTLE
+              , status : db.socialStatus.AWKWARD_TURTLE
             }).save(function(err, user) {
                 if (err) { return util.handleError("could not sign up new user", err); }
                 req.session.userId = user.id;
@@ -118,5 +120,15 @@ exports.signup = function(req, res) {
         }
     ], function(err) {
         if (err) { return util.handleError("could not register", err); }
+    });
+};
+
+exports.getSelf = function(req, res) {
+    User.findOne({"_id":req.session.userId}, function(err, user) {
+        if (err) { return util.handleError("could not retreive user", err); }
+        if (user) 
+            res.send(user.username);
+        else
+            res.send("Not logged in");
     });
 };

@@ -3,10 +3,11 @@ var Schema = mongoose.Schema;
 
 var userSchema = new Schema({
     email       : { type: String, unique: true, required: true }
-  , name        : { 
-                      first     : String
-                    , last      : String
-                  }
+  , username    : { type: String, unique: true, required: true }
+  //, name        : { 
+  //                    first     : String
+  //                  , last      : String
+  //                }
   , friends     : [{ type: Schema.ObjectId, ref: 'User' }]
   , status      : Number
 });
@@ -304,6 +305,5 @@ db.once('open', function callback() {
             }
         });
     }
-
 
 });

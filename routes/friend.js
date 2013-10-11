@@ -65,9 +65,9 @@ exports.findUser = function(req, res) {
     async.series([
         function(callback) {
             User.find( { $or : [{"username": req.query.input}, 
-                                {"email": req.query.input},
-                                {"name.first": req.query.input},
-                                {"name.last": req.query.input}] }, 
+                                {"email": req.query.input}] },
+                                //{"name.first": req.query.input},
+                                //{"name.last": req.query.input}] }, 
                        function(err, userList) {
                 if (err) { return util.handleError("could not find user w/ search query", err); }
                 users = userList;

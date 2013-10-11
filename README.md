@@ -29,11 +29,8 @@
 ##DB SCHEMAS
 
     userSchema = {
-        email   : String 
-      , name    : {
-                        first : String
-                      , last  : String
-        	      }
+        email   : String (NOT NULL, UNIQUE) 
+      , username: String (NOT NULL, UNIQUE)
       , friends : [ ObjectIds of User ]
       , status  : socialStatus 
     };
@@ -92,6 +89,13 @@ req.session:
         return: empty
 
 ###Auth
+    '/getSelf':
+        GET request
+        description:
+            this call is for testing purposes
+            gets username of session._id
+        return: <string> (username)
+
     '/start/login':
         POST request
         description:
@@ -132,8 +136,6 @@ req.session:
             req.body = {
                 username: <string>
               , password: <string>
-              , firstname: <string>
-              , lastname: <string>
               , email: <string>
             }
         returns:
@@ -166,7 +168,7 @@ req.session:
                 }
             }
             req.session.userId = <userId>
-        returns: empty
+        returns: if successs: { status: "OK" } 
 
     '/postUpvote':
         POST request
@@ -176,7 +178,7 @@ req.session:
                 partyId: <string>
             }
             req.session.userId = <userId>
-        return: empty
+        return: if success: { status: "OK" }
 
     '/getParty':
         GET request
@@ -198,6 +200,8 @@ req.session:
 ###Friend
     '/getFriend':
         GET request
+        description:
+            this request gets the data for opening a friend's profile
         expects:
             req.query.friendId = <userId>
         returns:
