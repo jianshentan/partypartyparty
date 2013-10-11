@@ -9,6 +9,7 @@ var FriendRequest   = mongoose.model('FriendRequest');
 exports.getFriends = function(req, res) {
     var friendIds = [];
     var friends = [];
+    var ret = {};
     async.series([
         function(callback) {
             User.findOne({"_id" : req.session.userId}, function(err, user) {
@@ -29,7 +30,9 @@ exports.getFriends = function(req, res) {
         }
     ], function(err) {
         if (err) { return util.handleError("could not find friends :(", err); }
-        res.send(friends);
+        ret.status = "OK";
+        ret.friends = friends;
+        res.send(ret);
     });
 };
 
@@ -49,12 +52,15 @@ exports.getFriend = function(req, res) {
         function(callback) {
             User.findOne({"_id": req.query.friendId}, function(err, friend) {
                 if (err) { return util.handleError("could not get friend", err); }
+                if (friend == null) { return util.handleError(
+                    "no friend found", "invalid friend id"); }
                 ret.friend = friend;
                 callback();
             });
         }
     ], function(err) {
         if (err) { return util.handleError("could not find friends & upvotes", err); }
+        ret.status = "OK";
         res.send(ret);
     });
 };
@@ -96,6 +102,7 @@ exports.findUser = function(req, res) {
         }
     ], function(err) {
         if (err) { return util.handleError("could not find user", err); }
+        ret.status = "OK";
         res.send(ret);
     });
 };
@@ -127,12 +134,14 @@ exports.sendFriendRequest = function(req, res) {
         }
     ], function(err) {
         if (err) { return util.handleError("could not process sending friend requeset", ""); }
+        res.send({ status: "OK" });
     });
 };
 
 exports.getFriendRequests = function(req, res) {
     var friendRequests = [];
-    var ret;
+    var users = [];
+    var ret = {};
     async.series([
         function(callback) {
             FriendRequest.find({to: req.session.userId, state: db.friendRequestStatus.PENDING}, 
@@ -144,21 +153,24 @@ exports.getFriendRequests = function(req, res) {
             });
         },
         function(callback) {
-            User.find({ "_id": { $in: friendRequests} }, function(err, users) {
+            User.find({ "_id": { $in: friendRequests} }, function(err, userList) {
                 if (err) { return util.handleError("could not get friends from requests", err); }
-                ret = users;
+                users = userList;
                 callback();
             });
         }
     ], function(err) {
         if (err) { return util.handleError("could not get friend requests", err); }
+        ret.status = "OK";
+        ret.users = users;
         res.send(ret);
     });
 };
 
 exports.getPendingRequests = function(req, res) {
     var pendingRequests = [];
-    var ret;
+    var users = [];
+    var ret = {};
     async.series([
         function(callback) {
             FriendRequest.find({from: req.session.userId, state: db.friendRequestStatus.PENDING},
@@ -170,14 +182,16 @@ exports.getPendingRequests = function(req, res) {
             });
         },
         function(callback) {
-            User.find({"_id": { $in: pendingRequests} }, function(err, users) {
+            User.find({"_id": { $in: pendingRequests} }, function(err, userList) {
                 if (err) { return util.handleError("could not get pending friends", err); }
-                ret = users;
+                users = userList;
                 callback();
             });
         }
     ], function(err) {
         if (err) { return util.handleError("could not get pending friends", err); }
+        ret.status = "OK";
+        ret.users = users;
         res.send(ret);
     });
 };
@@ -231,7 +245,7 @@ exports.acceptFriendRequest = function(req, res) {
         }
     ], function(err) {
         if (err) { return util.handleError("could not process accept-friend request", err); }
-        res.send("Accepted friend request");
+        res.send({ status: "OK" });
     });    
 };
 
@@ -248,7 +262,7 @@ exports.declineFriendRequest = function(req, res) {
                     return util.handleError("could not save state of request", err); 
                 }
             }); 
-            res.send("declined friend request");
+            res.send({ status: "OK" });
         } else {
             return util.handleError("no friend request found", "");
         }

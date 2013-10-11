@@ -56,7 +56,7 @@ exports.getParty = function(req, res) {
             Party.find({"_id":partyId}, function(err, party) {
                 if (err) { return util.handleError("could not get party data", err); }
                 if (party.length == 0) { return util.handleError(
-                    "no party found - party id is invalid", ""); }
+                    "no party found", "party id is invalid"); }
                 ret.party = party;
                 callback();
             });
@@ -70,6 +70,7 @@ exports.getParty = function(req, res) {
         }
     ], function(err, results) {
         if (err) { return util.handleError("could not get upvotes of the party", err); }
+        ret.status = "OK";
         res.send(ret);
     });
 };
@@ -80,6 +81,8 @@ exports.getParties = function(req, res) {
     var friends = [];
     var parties = [];
     var partyIds = [];
+    
+    var ret = {};
 
     async.series([
         function(callback) {
@@ -119,7 +122,9 @@ exports.getParties = function(req, res) {
         }
     ], function(err) {
         if (err) { return util.handleError("could not find parties from user", err); }
-        res.send(parties);
+        ret.parties = parties;
+        ret.status = "OK";
+        res.send(ret);
     });
 };
 

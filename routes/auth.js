@@ -127,8 +127,8 @@ exports.getSelf = function(req, res) {
     User.findOne({"_id":req.session.userId}, function(err, user) {
         if (err) { return util.handleError("could not retreive user", err); }
         if (user) 
-            res.send(user.username);
+            res.send({ status: "OK", message: "username: " + user.username });
         else
-            res.send("Not logged in");
+            res.send({ status: "ERROR", message: "Not logged in"});
     });
 };

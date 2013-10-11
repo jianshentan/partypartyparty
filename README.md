@@ -67,6 +67,12 @@
 
 ##BACK END API
 
+####Conventions:
+all data is returned from the server as a JSON
+if the request is successful, the server will return { status: "OK" }
+if the server does not return a response, assume an error occurred
+
+####Others:
 Sessions are created on login
 req.session:
 {
@@ -94,7 +100,11 @@ req.session:
         description:
             this call is for testing purposes
             gets username of session._id
-        return: <string> (username)
+        return: 
+            { 
+                status: <string> "OK" || "ERROR"
+              , message: <string> (username is in string) 
+            }
 
     '/start/login':
         POST request
@@ -125,7 +135,7 @@ req.session:
         expects: empty
         return: 
             {
-                status: <string> ("OK" || "ERROR")
+                status: <string> ("OK")
             }
 
     '/start/signup':
@@ -168,7 +178,10 @@ req.session:
                 }
             }
             req.session.userId = <userId>
-        returns: if successs: { status: "OK" } 
+        returns: 
+            { 
+                status: <string> ("OK") 
+            } 
 
     '/postUpvote':
         POST request
@@ -178,7 +191,10 @@ req.session:
                 partyId: <string>
             }
             req.session.userId = <userId>
-        return: if success: { status: "OK" }
+        return:
+            { 
+                status: <string> ("OK") 
+            }
 
     '/getParty':
         GET request
@@ -186,7 +202,8 @@ req.session:
             req.query.partyId: <string>
         returns: 
             {
-                party: { <partySchema> }
+                status: <string> ("OK")
+              , party: { <partySchema> }
               , upvotes: [ { <upvoteSchema> } ]
             }
 
@@ -195,7 +212,10 @@ req.session:
         expects:
             req.session.userId = <userId>
         returns:
-            [ <partySchema> ]
+            {
+                status: <string> ("OK")
+              , parties: [ <partySchema> ]
+            }
 
 ###Friend
     '/getFriend':
@@ -206,7 +226,8 @@ req.session:
             req.query.friendId = <userId>
         returns:
             {
-                friend: { <userSchema> }
+                status: <string> ("OK")
+              , friend: { <userSchema> }
               , upvotes: [ { <upvoteSchema> } ]
             }
 
@@ -215,35 +236,60 @@ req.session:
         expects:
             req.session.userId = <userId>
         returns:
-            [ { <userSchema> } ]
+            {
+                status: <string> ("OK")
+              , friends: [ { <userSchema> } ]
+            }
 
     '/findUser':
         GET request
+        description:
+            finds all users based on the input string
+            returns both user data and the state of their relationship
+            note: this function returns an array of users that fit the input string
+                typically, there should only be one user in the array
         expects:
             req.query.input = <string>
         returns:
-            [ { user: <userSchema>, requestState: <friendRequestSchema> } ]
-            if no friend-request is shared, 'requestState' will simply equal null
+            {
+                status: <string> ("OK")
+              , users: [ { user: <userSchema>, requestState: <friendRequestSchema> } ]
+                       if no friend-request is shared, 'requestState' will equal null
+            }
 
     '/sendFriendRequest':
         GET request
         expects:
             req.session.userId = <userId>
             req.query.friend = <userId>
-        returns: empty
+        returns: 
+            {
+                status: <string> ("OK")
+            }
 
     '/getFriendRequests':
         GET request
+        description:
+            returns a list of users who have requested to be friends with the querying user
         expects:
             req.session.userId = <userId>
         returns: 
-            [ { <userSchema> } ]
+            {
+                status: <string> ("OK")
+              , users: [ { <userSchema> } ]
+            }
 
-    '/getPendingResponses': 
+    '/getPendingRequests': 
         GET request
+        description:
+            returns a list of users who have been sent a request by the querying user
         expects:
             req.session.userId = <userId>
-        returns: empty
+        returns: 
+            {
+                status: <string> ("OK")
+              , users: [ { <userSchema> } ]
+            }
 
     '/acceptFriendRequest':
         GET request
@@ -254,7 +300,10 @@ req.session:
         expects:
             req.session.userId = <userId>
             req.query.friend = <userId>
-        return: empty // some kind of success message
+        return: 
+            {
+                status: <string> ("OK")
+            }
 
     '/declineFriendRequest':
         GET request
@@ -263,5 +312,8 @@ req.session:
         expects:
             req.session.userId = <userId>
             req.query.friend = <userId>
-        return: empty // some kind of success message
+        return:
+            {
+                status: <string> ("OK")
+            }
 
